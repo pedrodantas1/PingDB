@@ -1,0 +1,160 @@
+<html>
+<head>
+    <title>PingDB Control</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="MSThemeCompatible" content="Yes" />
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #F0F0F0;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin-top: 0;
+            color: #005A9E;
+        }
+        .status {
+            margin: 20px 0;
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .status.stopped {
+            background-color: #FFEBEB;
+            border: 1px solid #FFCACA;
+            color: #A80000;
+        }
+        .status.running {
+            background-color: #EBF8EB;
+            border: 1px solid #C6E6C6;
+            color: #006400;
+        }
+        .status b {
+            font-weight: 600;
+        }
+        button {
+            font-size: 14px;
+            padding: 10px 20px;
+            border: 1px solid #B0B0B0;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 130px;
+            margin: 5px;
+            transition: all 0.2s ease;
+        }
+        #btnStart {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        #btnStart:hover {
+            background-color: #218838;
+        }
+        #btnStop {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        #btnStop:hover {
+            background-color: #c82333;
+        }
+        button:disabled {
+            background-color: #E0E0E0;
+            border-color: #C0C0C0;
+            cursor: not-allowed;
+            color: #888;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 11px;
+            color: #888;
+        }
+    </style>
+
+    <script language="VBScript">
+        ' --- VBScript para interagir com o serviço ---
+
+        Dim shell, fso, exePath
+
+        Sub Window_OnLoad
+            Dim windowWidth, windowHeight, x, y
+            windowWidth = 450
+            windowHeight = 400
+
+            ' Redimensiona a janela primeiro
+            window.resizeTo windowWidth, windowHeight
+            
+            ' Lógica para centralizar a janela
+            x = (screen.availWidth - windowWidth) / 2
+            y = (screen.availHeight - windowHeight) / 2
+            window.moveTo x, y
+            
+            Set shell = CreateObject("WScript.Shell")
+            Set fso = CreateObject("Scripting.FileSystemObject")
+            
+            ' Assume que o .exe está na mesma pasta que este .hta
+            exePath = fso.GetParentFolderName(document.location.pathname) & "\PingDB-Service.exe"
+            
+            CheckStatus()
+        End Sub
+
+        Sub CheckStatus()
+            ' Executa o comando de status e espera ele terminar
+            ' O 0 no final significa que a janela do cmd fica oculta
+            ' O True significa que o script espera o comando finalizar
+            Dim returnCode
+            returnCode = shell.Run("""" & exePath & """ status", 0, True)
+
+            If returnCode = 0 Then
+                ' Código 0 = Serviço está rodando
+                document.getElementById("status-text").innerHTML = "<b>Executando</b>"
+                document.getElementById("status-box").className = "status running"
+                document.getElementById("btnStart").disabled = True
+                document.getElementById("btnStop").disabled = False
+            Else
+                ' Qualquer outro código = Serviço está parado
+                document.getElementById("status-text").innerHTML = "<b>Parado</b>"
+                document.getElementById("status-box").className = "status stopped"
+                document.getElementById("btnStart").disabled = False
+                document.getElementById("btnStop").disabled = True
+            End If
+        End Sub
+        
+        Sub StartService()
+            shell.Run """" & exePath & """ start", 0, False
+            ' Aguarda um pouco para o serviço iniciar e atualiza o status
+            setTimeout "CheckStatus", 1000
+        End Sub
+        
+        Sub StopService()
+            shell.Run """" & exePath & """ stop", 0, False
+            ' Aguarda um pouco para o serviço parar e atualiza o status
+            setTimeout "CheckStatus", 1000
+        End Sub
+
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>🚀 Controle PingDB</h2>
+        <div id="status-box" class="status">
+            Status do Serviço: <span id="status-text"><b>Verificando...</b></span>
+        </div>
+        <div>
+            <button id="btnStart" onclick="StartService()">Iniciar Ping</button>
+            <button id="btnStop" onclick="StopService()">Parar Ping</button>
+        </div>
+        <p class="footer">Feche esta janela a qualquer momento.<br/>O serviço continuará rodando em segundo plano.</p>
+    </div>
+</body>
+</html>

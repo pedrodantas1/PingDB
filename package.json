@@ -1,0 +1,20 @@
+{
+  "name": "pingdb-service-app",
+  "version": "2.0.0",
+  "description": "Serviço de background com GUI para manter o DB aquecido",
+  "main": "service.js",
+  "bin": "service.js",
+  "scripts": {
+    "start": "node service.js",
+    "build": "pkg . --targets node18-win-x64 --output PingDB-Service.exe"
+  },
+  "dependencies": {
+    "is-running": "^2.1.0",
+    "mssql": "^12.0.0",
+    "yargs-parser": "^21.1.1"
+  },
+  "pkg": {
+    "assets": [],
+    "scripts": []
+  }
+}
